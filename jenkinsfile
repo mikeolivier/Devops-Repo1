@@ -1,0 +1,23 @@
+node {  
+      def mvnHome = tool name: 'Maven Home', type: 'maven'
+    stage('SCM-Checkout') { 
+        git branch: 'main', credentialsId: 'Git-credentials1', url: 'https://github.com/mikeolivier/tomcat-demo.git' 
+    }
+    stage('mvn-clean') { 
+        sh "${mvnHome}/bin/mvn clean"
+    }
+    stage('mvn-compile') { 
+        sh "${mvnHome}/bin/mvn compile"
+    }
+    stage('mvn-test') { 
+        sh "${mvnHome}/bin/mvn test"
+    }
+    stage('mvn-package') { 
+        sh "${mvnHome}/bin/mvn package"
+    }
+    stage('deploy'){
+        sshagent(['672b44fc-fbfc-4eca-b09c-7cc9c3c7c392']) {
+          sh "scp -o StrictHostKeyChecking=no /var/lib/jenkins/workspace/job_test-2_pipeline_tomcat/target/tomcat-demo.war ubuntu@3.96.67.109:/opt/tomcat/webapps"
+        }
+    }    
+}
